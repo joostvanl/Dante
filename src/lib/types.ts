@@ -56,9 +56,19 @@ export type AttendanceFields = {
   present: boolean;
 };
 
+/** Aurora media fields may be a URL string or a media object. */
+export type MediaValue =
+  | string
+  | {
+      url?: string;
+      alt?: string;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+    };
+
 export type SiteSettingsFields = {
-  /** Public image URL (Aurora media field). */
-  heroImage?: string;
+  heroImage?: MediaValue;
   heroTitle?: string;
   heroLead?: string;
 };

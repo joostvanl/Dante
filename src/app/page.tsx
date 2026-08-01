@@ -6,6 +6,7 @@ import {
   listTeachers,
 } from "@/lib/aurora";
 import { courseSpots, teacherBySlug } from "@/lib/course";
+import { asText, mediaAlt, mediaUrl } from "@/lib/fields";
 
 export const dynamic = "force-dynamic";
 
@@ -18,10 +19,11 @@ export default async function HomePage() {
   ]);
 
   const visible = courses.filter((c) => c.slug !== "default");
-  const heroImage = (settings?.fields.heroImage ?? "").trim();
-  const heroTitle = (settings?.fields.heroTitle ?? "").trim() || "Dante";
+  const heroImage = mediaUrl(settings?.fields.heroImage);
+  const heroAlt = mediaAlt(settings?.fields.heroImage);
+  const heroTitle = asText(settings?.fields.heroTitle) || "Dante";
   const heroLead =
-    (settings?.fields.heroLead ?? "").trim() ||
+    asText(settings?.fields.heroLead) ||
     "Compacte cursussen van beginners tot gevorderd. Kies je niveau, meld je aan zolang er plek is.";
 
   return (
@@ -31,9 +33,12 @@ export default async function HomePage() {
         aria-label="Introductie"
       >
         {heroImage ? (
-          // CMS media field is a public URL string (any host Aurora returns).
           // eslint-disable-next-line @next/next/no-img-element
-          <img className="hero-banner-media" src={heroImage} alt="" />
+          <img
+            className="hero-banner-media"
+            src={heroImage}
+            alt={heroAlt}
+          />
         ) : null}
         <div className="hero-banner-scrim" aria-hidden />
         <div className="hero-banner-inner">
