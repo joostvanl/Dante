@@ -1,0 +1,12 @@
+services:
+  web:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_CMS_API_URL: ${NEXT_PUBLIC_CMS_API_URL}
+        NEXT_PUBLIC_CMS_SITE_KEY: ${NEXT_PUBLIC_CMS_SITE_KEY}
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    restart: unless-stopped

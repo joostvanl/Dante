@@ -1,0 +1,334 @@
+/**
+ * Idempotent CMS provision for Dante (Aurora Management API).
+ * Aligns schema with the live content model; does not overwrite
+ * existing course/teacher seed content from Admin.
+ *
+ * Usage:
+ *   node scripts/provision.mjs
+ */
+
+import { readFileSync, existsSync } from "fs";
+import { resolve, dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const root = resolve(__dirname, "..");
+
+function loadEnvFile(path) {
+  if (!existsSync(path)) return;
+  const text = readFileSync(path, "utf8");
+  for (const line of text.split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eq = trimmed.indexOf("=");
+    if (eq <= 0) continue;
+    const key = trimmed.slice(0, eq).trim();
+    let value = trimmed.slice(eq + 1).trim();
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1);
+    }
+    if (!process.env[key]) process.env[key] = value;
+  }
+}
+
+loadEnvFile(resolve(root, ".env.local"));
+loadEnvFile(resolve(root, ".env"));
+
+const API = (
+  process.env.CMS_API_URL ||
+  process.env.NEXT_PUBLIC_CMS_API_URL ||
+  ""
+).replace(/\/$/, "");
+const TOKEN = process.env.CMS_MANAGEMENT_TOKEN;
+
+if (!API || !TOKEN) {
+  console.error(
+    "Missing CMS_API_URL/NEXT_PUBLIC_CMS_API_URL or CMS_MANAGEMENT_TOKEN",
+  );
+  process.exit(1);
+}
+
+async function admin(path, init = {}) {
+  const res = await fetch(`${API}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${TOKEN}`,
+      "Content-Type": "application/json",
+      ...(init.headers || {}),
+    },
+  });
+  const text = await res.text();
+  let body;
+  try {
+    body = text ? JSON.parse(text) : null;
+  } catch {
+    body = text;
+  }
+  if (!res.ok) {
+    throw new Error(`${init.method || "GET"} ${path} → ${res.status}: ${text}`);
+  }
+  return body;
+}
+
+function dayDate(offsetDays) {
+  const d = new Date();
+  d.setHours(10, 0, 0, 0);
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString();
+}
+
+const payload = {
+  contentTypes: [
+    {
+      apiId: "teacher",
+      name: "Teacher",
+      description: "Docent Italiaanse taal voor Dante",
+      fields: [
+        {
+          apiId: "name",
+          name: "Name",
+          type: "text",
+          required: true,
+          sortOrder: 1,
+        },
+        {
+          apiId: "specialty",
+          name: "Specialty",
+          type: "text",
+          required: true,
+          sortOrder: 2,
+        },
+        {
+          apiId: "bio",
+          name: "Bio",
+          type: "textarea",
+          required: false,
+          sortOrder: 3,
+        },
+        {
+          apiId: "email",
+          name: "Email",
+          type: "text",
+          required: false,
+          sortOrder: 4,
+        },
+        {
+          apiId: "phone",
+          name: "Phone",
+          type: "text",
+          required: false,
+          sortOrder: 5,
+        },
+      ],
+      entries: [],
+    },
+    {
+      apiId: "course",
+      name: "Course",
+      description: "Italiaanse cursussen bij Dante",
+      fields: [
+        {
+          apiId: "title",
+          name: "Title",
+          type: "text",
+          required: true,
+          sortOrder: 0,
+        },
+        {
+          apiId: "description",
+          name: "Description",
+          type: "textarea",
+          required: true,
+          sortOrder: 1,
+        },
+        {
+          apiId: "maxParticipants",
+          name: "Max participants",
+          type: "number",
+          required: true,
+          sortOrder: 2,
+        },
+        {
+          apiId: "enrollmentOpen",
+          name: "Enrollment open",
+          type: "boolean",
+          required: true,
+          sortOrder: 3,
+        },
+        {
+          apiId: "teacherSlug",
+          name: "Teacher slug",
+          type: "text",
+          required: false,
+          sortOrder: 10,
+        },
+        {
+          apiId: "season",
+          name: "Season",
+          type: "text",
+          required: false,
+          sortOrder: 11,
+        },
+        {
+          apiId: "level",
+          name: "Level",
+          type: "text",
+          required: false,
+          sortOrder: 12,
+        },
+      ],
+      entries: [],
+    },
+    {
+      apiId: "course_day",
+      name: "Course day",
+      description: "Individuele cursusdagen",
+      fields: [
+        {
+          apiId: "title",
+          name: "Title",
+          type: "text",
+          required: true,
+          sortOrder: 0,
+        },
+        {
+          apiId: "date",
+          name: "Date",
+          type: "datetime",
+          required: true,
+          sortOrder: 1,
+        },
+        {
+          apiId: "sortOrder",
+          name: "Sort order",
+          type: "number",
+          required: true,
+          sortOrder: 2,
+        },
+        {
+          apiId: "notes",
+          name: "Notes",
+          type: "textarea",
+          required: false,
+          sortOrder: 3,
+        },
+      ],
+      entries: [
+        {
+          slug: "dag-1",
+          status: "published",
+          fields: {
+            title: "Kennismaking & basis",
+            date: dayDate(14),
+            sortOrder: 1,
+            notes: "Introductie en eerste oefeningen.",
+          },
+        },
+        {
+          slug: "dag-2",
+          status: "published",
+          fields: {
+            title: "Verdieping",
+            date: dayDate(28),
+            sortOrder: 2,
+            notes: "Praktijkopdrachten en feedback.",
+          },
+        },
+        {
+          slug: "dag-3",
+          status: "published",
+          fields: {
+            title: "Afronding",
+            date: dayDate(42),
+            sortOrder: 3,
+            notes: "Presentaties en evaluatie.",
+          },
+        },
+      ],
+    },
+    {
+      apiId: "enrollee",
+      name: "Enrollee",
+      description: "Inschrijvers op de cursus",
+      fields: [
+        {
+          apiId: "name",
+          name: "Name",
+          type: "text",
+          required: true,
+          sortOrder: 0,
+        },
+        {
+          apiId: "email",
+          name: "Email",
+          type: "text",
+          required: true,
+          sortOrder: 1,
+        },
+        {
+          apiId: "phone",
+          name: "Phone",
+          type: "text",
+          required: false,
+          sortOrder: 2,
+        },
+      ],
+      entries: [],
+    },
+    {
+      apiId: "attendance",
+      name: "Attendance",
+      description: "Aanwezigheid per cursist per dag",
+      fields: [
+        {
+          apiId: "enrolleeSlug",
+          name: "Enrollee slug",
+          type: "text",
+          required: true,
+          sortOrder: 0,
+        },
+        {
+          apiId: "courseDaySlug",
+          name: "Course day slug",
+          type: "text",
+          required: true,
+          sortOrder: 1,
+        },
+        {
+          apiId: "present",
+          name: "Present",
+          type: "boolean",
+          required: true,
+          sortOrder: 2,
+        },
+      ],
+      entries: [],
+    },
+  ],
+};
+
+const origins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://localhost:3002",
+  ...(process.env.PUBLIC_SITE_ORIGIN
+    ? [process.env.PUBLIC_SITE_ORIGIN]
+    : []),
+];
+
+console.log(`Provisioning against ${API} …`);
+const result = await admin("/api/v1/admin/provision", {
+  method: "POST",
+  body: JSON.stringify(payload),
+});
+console.log("Provision OK:", JSON.stringify(result, null, 2));
+
+await admin("/api/v1/admin/website", {
+  method: "PATCH",
+  body: JSON.stringify({ allowedOrigins: origins }),
+});
+console.log("Allowed origins:", origins.join(", "));
+console.log("Done.");
