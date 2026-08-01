@@ -51,7 +51,7 @@ Open [http://localhost:3002](http://localhost:3002). Docent: `/docent` met `TEAC
 |------|-----|
 | `course` | Cursussen (`title`, `description`, `maxParticipants`, `enrollmentOpen`, `teacherSlug`, `season`, `level`) |
 | `teacher` | Docenten (`name`, `specialty`, `bio`, `email`, `phone`) |
-| `course_day` | Cursusdagen |
+| `course_day` | Cursusdagen (`courseSlug` koppelt aan een cursus) |
 | `enrollee` | Inschrijvers (slug `{email}-for-{courseSlug}` koppelt aan een cursus) |
 | `attendance` | Aanwezigheid (slug `{enrollee}-at-{day}`) |
 

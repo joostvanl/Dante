@@ -15,14 +15,14 @@ type Props = { params: Promise<{ slug: string }> };
 
 export default async function CourseDetailPage({ params }: Props) {
   const { slug } = await params;
-  const [course, days, enrollees] = await Promise.all([
+  const [course, enrollees] = await Promise.all([
     getCourse(slug),
-    listCourseDays(),
     listEnrollees(),
   ]);
 
   if (!course) notFound();
 
+  const days = await listCourseDays(course.slug);
   const teacher = course.fields.teacherSlug
     ? await getTeacher(course.fields.teacherSlug)
     : null;
@@ -88,9 +88,9 @@ export default async function CourseDetailPage({ params }: Props) {
 
       <section className="section">
         <h2>Cursusdagen</h2>
-        <p className="sub">Het gedeelde rooster voor bijeenkomsten.</p>
+        <p className="sub">Bijeenkomsten voor deze cursus.</p>
         {days.length === 0 ? (
-          <p className="empty">Nog geen cursusdagen gepland.</p>
+          <p className="empty">Nog geen cursusdagen voor deze cursus.</p>
         ) : (
           <ul className="day-list">
             {days.map((day) => (

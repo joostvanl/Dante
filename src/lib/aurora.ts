@@ -99,12 +99,17 @@ export async function getTeacher(slug: string): Promise<Teacher | null> {
   }
 }
 
-export async function listCourseDays(): Promise<CourseDay[]> {
+export async function listCourseDays(
+  courseSlug?: string,
+): Promise<CourseDay[]> {
   try {
     const data = await publicFetch<Paginated<CourseDay>>(
       "/api/v1/content-types/course_day/entries?limit=100",
     );
-    return [...data.items].sort(
+    const items = courseSlug
+      ? data.items.filter((d) => d.fields.courseSlug === courseSlug)
+      : data.items;
+    return [...items].sort(
       (a, b) => (a.fields.sortOrder ?? 0) - (b.fields.sortOrder ?? 0),
     );
   } catch {

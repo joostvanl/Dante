@@ -17,6 +17,7 @@ type Day = {
   title: string;
   date: string;
   sortOrder: number;
+  courseSlug: string | null;
 };
 
 type Person = {
@@ -83,6 +84,18 @@ export function AttendanceBoard() {
     if (!data || !courseSlug) return [];
     return data.enrollees.filter((e) => e.courseSlug === courseSlug);
   }, [data, courseSlug]);
+
+  const courseDays = useMemo(() => {
+    if (!data || !courseSlug) return [];
+    return data.days.filter((d) => d.courseSlug === courseSlug);
+  }, [data, courseSlug]);
+
+  useEffect(() => {
+    if (!courseSlug || courseDays.length === 0) return;
+    if (!courseDays.some((d) => d.slug === daySlug)) {
+      setDaySlug(courseDays[0]?.slug ?? "");
+    }
+  }, [courseSlug, courseDays, daySlug]);
 
   const presentCount = useMemo(() => {
     if (!daySlug) return 0;
@@ -222,7 +235,7 @@ export function AttendanceBoard() {
     );
   }
 
-  const activeDay = data.days.find((d) => d.slug === daySlug);
+  const activeDay = courseDays.find((d) => d.slug === daySlug);
 
   return (
     <div className="anim-fade">
@@ -231,7 +244,10 @@ export function AttendanceBoard() {
           <button
             type="button"
             className="back-link"
-            onClick={() => setCourseSlug("")}
+            onClick={() => {
+              setCourseSlug("");
+              setDaySlug("");
+            }}
           >
             ← Andere cursus
           </button>
@@ -254,20 +270,24 @@ export function AttendanceBoard() {
         </button>
       </div>
 
-      <div className="day-tabs" role="tablist" aria-label="Cursusdagen">
-        {data.days.map((day) => (
-          <button
-            key={day.slug}
-            type="button"
-            role="tab"
-            className="day-tab"
-            aria-selected={day.slug === daySlug}
-            onClick={() => setDaySlug(day.slug)}
-          >
-            {formatShortDay(day.date)} · {day.title}
-          </button>
-        ))}
-      </div>
+      {courseDays.length === 0 ? (
+        <p className="empty">Nog geen cursusdagen voor deze cursus.</p>
+      ) : (
+        <div className="day-tabs" role="tablist" aria-label="Cursusdagen">
+          {courseDays.map((day) => (
+            <button
+              key={day.slug}
+              type="button"
+              role="tab"
+              className="day-tab"
+              aria-selected={day.slug === daySlug}
+              onClick={() => setDaySlug(day.slug)}
+            >
+              {formatShortDay(day.date)} · {day.title}
+            </button>
+          ))}
+        </div>
+      )}
 
       {error ? (
         <p className="msg msg-err" role="alert">

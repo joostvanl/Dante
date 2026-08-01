@@ -50,6 +50,7 @@ export async function GET() {
       title: d.fields.title,
       date: d.fields.date,
       sortOrder: d.fields.sortOrder,
+      courseSlug: d.fields.courseSlug ?? null,
     })),
     enrollees: enrollees.map((e) => ({
       slug: e.slug,

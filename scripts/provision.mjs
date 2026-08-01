@@ -73,13 +73,6 @@ async function admin(path, init = {}) {
   return body;
 }
 
-function dayDate(offsetDays) {
-  const d = new Date();
-  d.setHours(10, 0, 0, 0);
-  d.setDate(d.getDate() + offsetDays);
-  return d.toISOString();
-}
-
 const payload = {
   contentTypes: [
     {
@@ -215,39 +208,16 @@ const payload = {
           required: false,
           sortOrder: 3,
         },
-      ],
-      entries: [
         {
-          slug: "dag-1",
-          status: "published",
-          fields: {
-            title: "Kennismaking & basis",
-            date: dayDate(14),
-            sortOrder: 1,
-            notes: "Introductie en eerste oefeningen.",
-          },
-        },
-        {
-          slug: "dag-2",
-          status: "published",
-          fields: {
-            title: "Verdieping",
-            date: dayDate(28),
-            sortOrder: 2,
-            notes: "Praktijkopdrachten en feedback.",
-          },
-        },
-        {
-          slug: "dag-3",
-          status: "published",
-          fields: {
-            title: "Afronding",
-            date: dayDate(42),
-            sortOrder: 3,
-            notes: "Presentaties en evaluatie.",
-          },
+          apiId: "courseSlug",
+          name: "Course slug",
+          type: "text",
+          required: true,
+          sortOrder: 5,
         },
       ],
+      // Days are managed in Admin (per course); do not overwrite entries here.
+      entries: [],
     },
     {
       apiId: "enrollee",

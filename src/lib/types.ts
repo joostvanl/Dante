@@ -40,6 +40,8 @@ export type CourseDayFields = {
   date: string;
   sortOrder: number;
   notes?: string;
+  /** Links the day to a course entry slug. */
+  courseSlug?: string;
 };
 
 export type EnrolleeFields = {
