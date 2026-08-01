@@ -753,6 +753,13 @@ a.course-title:hover {
   margin-bottom: 1.15rem;
 }
 
+.toolbar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .stats {
   color: var(--muted);
   font-weight: 550;

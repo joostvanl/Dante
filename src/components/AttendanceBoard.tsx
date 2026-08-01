@@ -46,6 +46,7 @@ export function AttendanceBoard() {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -166,6 +167,41 @@ export function AttendanceBoard() {
     router.refresh();
   }
 
+  async function exportCsv(forCourseSlug?: string) {
+    setExporting(true);
+    setError(null);
+    try {
+      const qs = forCourseSlug
+        ? `?course=${encodeURIComponent(forCourseSlug)}`
+        : "";
+      const res = await fetch(`/api/teacher/export${qs}`);
+      if (res.status === 401) {
+        router.push("/docent");
+        return;
+      }
+      if (!res.ok) {
+        setError("CSV-export mislukt.");
+        return;
+      }
+      const blob = await res.blob();
+      const disposition = res.headers.get("Content-Disposition") ?? "";
+      const match = disposition.match(/filename="([^"]+)"/);
+      const filename = match?.[1] ?? "aanwezigheid.csv";
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setError("Netwerkfout bij CSV-export.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
   if (loading) {
     return <p className="empty anim-fade">Laden…</p>;
   }
@@ -187,9 +223,19 @@ export function AttendanceBoard() {
               Aanwezigheid registreer je per cursus en per dag.
             </p>
           </div>
-          <button type="button" className="btn btn-ghost" onClick={logout}>
-            Uitloggen
-          </button>
+          <div className="toolbar-actions">
+            <button
+              type="button"
+              className="btn btn-ghost"
+              disabled={exporting}
+              onClick={() => void exportCsv()}
+            >
+              {exporting ? "Exporteren…" : "Exporteer alle aanwezigheid"}
+            </button>
+            <button type="button" className="btn btn-ghost" onClick={logout}>
+              Uitloggen
+            </button>
+          </div>
         </div>
 
         {error ? (
@@ -265,9 +311,19 @@ export function AttendanceBoard() {
               : "Kies een cursusdag"}
           </p>
         </div>
-        <button type="button" className="btn btn-ghost" onClick={logout}>
-          Uitloggen
-        </button>
+        <div className="toolbar-actions">
+          <button
+            type="button"
+            className="btn btn-ghost"
+            disabled={exporting}
+            onClick={() => void exportCsv(activeCourse.slug)}
+          >
+            {exporting ? "Exporteren…" : "Exporteer aanwezigheid"}
+          </button>
+          <button type="button" className="btn btn-ghost" onClick={logout}>
+            Uitloggen
+          </button>
+        </div>
       </div>
 
       {courseDays.length === 0 ? (
