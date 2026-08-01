@@ -212,6 +212,16 @@ const payload = {
           required: false,
           sortOrder: 12,
         },
+        {
+          apiId: "courseDays",
+          name: "Cursusmomenten",
+          type: "relations",
+          required: false,
+          sortOrder: 13,
+          settings: {
+            relatedContentTypeApiId: "course_day",
+          },
+        },
       ],
       entries: [],
     },
@@ -254,6 +264,16 @@ const payload = {
           type: "text",
           required: true,
           sortOrder: 5,
+        },
+        {
+          apiId: "course",
+          name: "Cursus",
+          type: "relation",
+          required: true,
+          sortOrder: 6,
+          settings: {
+            relatedContentTypeApiId: "course",
+          },
         },
       ],
       // Days are managed in Admin (per course); do not overwrite entries here.

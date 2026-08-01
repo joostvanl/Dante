@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { isTeacherAuthenticated } from "@/lib/auth";
 import {
+  buildCourseSlugByDaySlug,
   courseSlugFromEnrollee,
   isEnrolleeForCourse,
   listAttendance,
   listCourseDays,
   listCourses,
   listEnrollees,
+  resolveDayCourseSlug,
 } from "@/lib/aurora";
 
 export async function GET() {
@@ -20,6 +22,8 @@ export async function GET() {
     listEnrollees(),
     listAttendance(),
   ]);
+
+  const courseSlugByDay = buildCourseSlugByDaySlug(courses);
 
   const presentByKey: Record<string, boolean> = {};
   for (const row of attendance) {
@@ -50,7 +54,7 @@ export async function GET() {
       title: d.fields.title,
       date: d.fields.date,
       sortOrder: d.fields.sortOrder,
-      courseSlug: d.fields.courseSlug ?? null,
+      courseSlug: resolveDayCourseSlug(d, courseSlugByDay),
     })),
     enrollees: enrollees.map((e) => ({
       slug: e.slug,

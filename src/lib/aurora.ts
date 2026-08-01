@@ -87,6 +87,64 @@ export async function getCourse(slug: string): Promise<Course | null> {
   }
 }
 
+/** Normalize a relation / slug field to a single slug string. */
+export function relationSlug(value: unknown): string | null {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed || null;
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    "slug" in value &&
+    typeof (value as { slug: unknown }).slug === "string"
+  ) {
+    const trimmed = (value as { slug: string }).slug.trim();
+    return trimmed || null;
+  }
+  return null;
+}
+
+/** Normalize a multi-relation field to slug strings. */
+export function relationSlugs(value: unknown): string[] {
+  if (value == null) return [];
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => relationSlug(item))
+      .filter((slug): slug is string => Boolean(slug));
+  }
+  const one = relationSlug(value);
+  return one ? [one] : [];
+}
+
+/** Prefer relation `course`, fall back to legacy `courseSlug`. */
+export function dayCourseSlug(day: CourseDay): string | null {
+  return (
+    relationSlug(day.fields.course) ?? relationSlug(day.fields.courseSlug)
+  );
+}
+
+/** Index day slug → course slug from each course's `courseDays` relations. */
+export function buildCourseSlugByDaySlug(
+  courses: Course[],
+): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const course of courses) {
+    for (const daySlug of relationSlugs(course.fields.courseDays)) {
+      map.set(daySlug, course.slug);
+    }
+  }
+  return map;
+}
+
+/** Resolve a day's course via day fields, then via inverse `courseDays`. */
+export function resolveDayCourseSlug(
+  day: CourseDay,
+  courseSlugByDaySlug?: Map<string, string>,
+): string | null {
+  return dayCourseSlug(day) ?? courseSlugByDaySlug?.get(day.slug) ?? null;
+}
+
 export async function listTeachers(): Promise<Teacher[]> {
   try {
     const data = await publicFetch<Paginated<Teacher>>(
@@ -110,6 +168,16 @@ export async function getTeacher(slug: string): Promise<Teacher | null> {
   }
 }
 
+export async function getCourseDay(slug: string): Promise<CourseDay | null> {
+  try {
+    return await publicFetch<CourseDay>(
+      `/api/v1/content-types/course_day/entries/${encodeURIComponent(slug)}`,
+    );
+  } catch {
+    return null;
+  }
+}
+
 export async function listCourseDays(
   courseSlug?: string,
 ): Promise<CourseDay[]> {
@@ -118,7 +186,7 @@ export async function listCourseDays(
       "/api/v1/content-types/course_day/entries?limit=100",
     );
     const items = courseSlug
-      ? data.items.filter((d) => d.fields.courseSlug === courseSlug)
+      ? data.items.filter((d) => dayCourseSlug(d) === courseSlug)
       : data.items;
     return [...items].sort(
       (a, b) => (a.fields.sortOrder ?? 0) - (b.fields.sortOrder ?? 0),
@@ -126,6 +194,25 @@ export async function listCourseDays(
   } catch {
     return [];
   }
+}
+
+/**
+ * Days for a course: resolve `fields.courseDays` slugs when set,
+ * otherwise fall back to listing days linked via `course` / `courseSlug`.
+ */
+export async function listCourseDaysForCourse(
+  course: Course,
+): Promise<CourseDay[]> {
+  const related = relationSlugs(course.fields.courseDays);
+  if (related.length > 0) {
+    const days = await Promise.all(related.map((slug) => getCourseDay(slug)));
+    return days
+      .filter((d): d is CourseDay => d != null)
+      .sort(
+        (a, b) => (a.fields.sortOrder ?? 0) - (b.fields.sortOrder ?? 0),
+      );
+  }
+  return listCourseDays(course.slug);
 }
 
 export async function listEnrollees(): Promise<Enrollee[]> {

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import {
   getCourse,
   getTeacher,
-  listCourseDays,
+  listCourseDaysForCourse,
   listEnrollees,
 } from "@/lib/aurora";
 import { courseSpots } from "@/lib/course";
@@ -22,7 +22,7 @@ export default async function CourseDetailPage({ params }: Props) {
 
   if (!course) notFound();
 
-  const days = await listCourseDays(course.slug);
+  const days = await listCourseDaysForCourse(course);
   const teacher = course.fields.teacherSlug
     ? await getTeacher(course.fields.teacherSlug)
     : null;

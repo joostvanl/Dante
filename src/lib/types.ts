@@ -25,6 +25,8 @@ export type CourseFields = {
   teacherSlug?: string;
   season?: string;
   level?: string;
+  /** Related `course_day` entry slugs. */
+  courseDays?: string[];
 };
 
 export type TeacherFields = {
@@ -40,8 +42,10 @@ export type CourseDayFields = {
   date: string;
   sortOrder: number;
   notes?: string;
-  /** Links the day to a course entry slug. */
+  /** Legacy text link to a course entry slug. */
   courseSlug?: string;
+  /** Related `course` entry slug. */
+  course?: string;
 };
 
 export type EnrolleeFields = {

@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { isTeacherAuthenticated } from "@/lib/auth";
 import {
+  buildCourseSlugByDaySlug,
   isEnrolleeForCourse,
   listAttendance,
   listCourseDays,
   listCourses,
   listEnrollees,
+  resolveDayCourseSlug,
 } from "@/lib/aurora";
 import { toCsv } from "@/lib/csv";
 import { formatDay } from "@/lib/format";
@@ -32,6 +34,7 @@ export async function GET(request: Request) {
   const courseBySlug = new Map(
     courses.map((c) => [c.slug, c.fields.title ?? c.slug]),
   );
+  const courseSlugByDay = buildCourseSlugByDaySlug(courses);
 
   const presentByKey = new Map<string, boolean>();
   for (const row of attendance) {
@@ -61,7 +64,7 @@ export async function GET(request: Request) {
   for (const slug of courseSlugs) {
     const courseTitle = courseBySlug.get(slug) ?? slug;
     const courseDays = days
-      .filter((d) => d.fields.courseSlug === slug)
+      .filter((d) => resolveDayCourseSlug(d, courseSlugByDay) === slug)
       .sort(
         (a, b) => (a.fields.sortOrder ?? 0) - (b.fields.sortOrder ?? 0),
       );
