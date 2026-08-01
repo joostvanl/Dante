@@ -15,25 +15,30 @@ export default async function TeacherDetailPage({ params }: Props) {
 
   if (!teacher) notFound();
 
-  const taught = courses.filter((c) => c.fields.teacherSlug === teacher.slug);
+  const taught = courses.filter(
+    (c) => c.fields.teacherSlug === teacher.slug && c.slug !== "default",
+  );
 
   return (
     <main>
-      <section className="section" style={{ marginTop: 0 }}>
+      <section className="detail-hero anim-rise">
         <p className="eyebrow">
-          <Link href="/docenten">← Docenten</Link>
+          <Link href="/docenten">← Alle docenten</Link>
         </p>
-        <h2>{teacher.fields.name}</h2>
+        <div className="teacher-avatar" aria-hidden>
+          {(teacher.fields.name ?? "?").slice(0, 1)}
+        </div>
+        <h1>{teacher.fields.name}</h1>
         <p className="specialty">{teacher.fields.specialty}</p>
         {teacher.fields.bio ? (
-          <p className="lead" style={{ maxWidth: "40rem" }}>
-            {teacher.fields.bio}
-          </p>
+          <p className="lead">{teacher.fields.bio}</p>
         ) : null}
-
-        <div className="meta-row" style={{ marginTop: "1rem" }}>
+        <div className="meta-row" style={{ marginTop: "1.1rem" }}>
           {teacher.fields.email ? (
-            <a className="meta-chip meta-link" href={`mailto:${teacher.fields.email}`}>
+            <a
+              className="meta-chip meta-link"
+              href={`mailto:${teacher.fields.email}`}
+            >
               {teacher.fields.email}
             </a>
           ) : null}
@@ -45,31 +50,32 @@ export default async function TeacherDetailPage({ params }: Props) {
 
       <section className="section">
         <h2>Cursussen</h2>
+        <p className="sub">Cursussen die deze docent geeft.</p>
         {taught.length === 0 ? (
           <p className="empty">Geen gekoppelde cursussen.</p>
         ) : (
-          <ul className="course-list">
+          <ul className="course-grid">
             {taught.map((course) => (
-              <li key={course.id} className="course-row">
-                <div className="course-row-main">
-                  <Link
-                    href={`/cursus/${course.slug}`}
-                    className="course-title"
-                  >
-                    {course.fields.title}
-                  </Link>
-                  <div className="meta-row">
-                    {course.fields.season ? (
-                      <span className="meta-chip">{course.fields.season}</span>
-                    ) : null}
-                    {course.fields.level ? (
-                      <span className="meta-chip">{course.fields.level}</span>
-                    ) : null}
-                  </div>
-                </div>
-                <Link className="btn btn-ghost" href={`/cursus/${course.slug}`}>
-                  Bekijken
+              <li key={course.id} className="course-card">
+                <Link
+                  href={`/cursus/${course.slug}`}
+                  className="course-title"
+                >
+                  {course.fields.title}
                 </Link>
+                <div className="meta-row">
+                  {course.fields.season ? (
+                    <span className="meta-chip">{course.fields.season}</span>
+                  ) : null}
+                  {course.fields.level ? (
+                    <span className="meta-chip">{course.fields.level}</span>
+                  ) : null}
+                </div>
+                <div className="course-card-foot">
+                  <Link className="btn btn-primary" href={`/cursus/${course.slug}`}>
+                    Bekijken
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>

@@ -30,12 +30,12 @@ export default async function CourseDetailPage({ params }: Props) {
 
   return (
     <main>
-      <section className="section" style={{ marginTop: 0 }}>
+      <section className="detail-hero anim-rise">
         <p className="eyebrow">
-          <Link href="/#cursussen">← Cursussen</Link>
+          <Link href="/#cursussen">← Alle cursussen</Link>
         </p>
-        <h2>{course.fields.title}</h2>
-        <div className="meta-row" style={{ marginBottom: "1rem" }}>
+        <h1>{course.fields.title}</h1>
+        <div className="meta-row" style={{ marginBottom: "1.1rem" }}>
           {course.fields.season ? (
             <span className="meta-chip">{course.fields.season}</span>
           ) : null}
@@ -48,11 +48,8 @@ export default async function CourseDetailPage({ params }: Props) {
               : `${remaining} van ${max} plekken vrij`}
           </span>
         </div>
-        <p className="lead" style={{ maxWidth: "40rem" }}>
-          {course.fields.description}
-        </p>
-
-        <div className="hero-actions" style={{ marginTop: "1.25rem" }}>
+        <p className="lead">{course.fields.description}</p>
+        <div className="hero-actions" style={{ marginTop: "1.4rem" }}>
           {open ? (
             <Link
               className="btn btn-primary"
@@ -69,15 +66,21 @@ export default async function CourseDetailPage({ params }: Props) {
       </section>
 
       {teacher ? (
-        <section className="section">
+        <section className="section anim-fade">
           <h2>Docent</h2>
-          <div className="panel teacher-card">
+          <p className="sub">Wie deze cursus begeleidt.</p>
+          <div className="teacher-card" style={{ maxWidth: "28rem" }}>
+            <div className="teacher-avatar" aria-hidden>
+              {(teacher.fields.name ?? "?").slice(0, 1)}
+            </div>
             <Link href={`/docenten/${teacher.slug}`} className="course-title">
               {teacher.fields.name}
             </Link>
             <p className="specialty">{teacher.fields.specialty}</p>
             {teacher.fields.bio ? (
-              <p className="course-excerpt">{teacher.fields.bio}</p>
+              <p className="course-excerpt" style={{ WebkitLineClamp: 4 }}>
+                {teacher.fields.bio}
+              </p>
             ) : null}
           </div>
         </section>
@@ -85,7 +88,7 @@ export default async function CourseDetailPage({ params }: Props) {
 
       <section className="section">
         <h2>Cursusdagen</h2>
-        <p className="sub">Geplande bijeenkomsten (gedeeld rooster).</p>
+        <p className="sub">Het gedeelde rooster voor bijeenkomsten.</p>
         {days.length === 0 ? (
           <p className="empty">Nog geen cursusdagen gepland.</p>
         ) : (

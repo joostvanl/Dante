@@ -35,9 +35,9 @@ export function TeacherLoginForm() {
   }
 
   return (
-    <form className="form pin-form panel" onSubmit={onSubmit}>
+    <form className="form pin-form panel anim-rise" onSubmit={onSubmit}>
       <h1>Docent</h1>
-      <p>Voer de PIN in om aanwezigheid te registreren.</p>
+      <p>Log in met je PIN om per cursus aanwezigheid te registreren.</p>
       <div className="field">
         <label htmlFor="pin">PIN</label>
         <input

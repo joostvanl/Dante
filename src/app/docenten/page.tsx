@@ -8,18 +8,23 @@ export default async function DocentenPage() {
 
   return (
     <main>
-      <section className="section" style={{ marginTop: 0 }}>
-        <h2>Docenten</h2>
-        <p className="sub">
-          De docenten van Dante — specialisten in Italiaanse taal en cultuur.
+      <section className="detail-hero anim-rise">
+        <h1 className="page-title">Docenten</h1>
+        <p className="page-sub">
+          Specialisten in Italiaanse taal, cultuur en spreekvaardigheid.
         </p>
+      </section>
 
+      <section className="section" style={{ marginTop: "1.75rem" }}>
         {teachers.length === 0 ? (
           <p className="empty">Nog geen gepubliceerde docenten.</p>
         ) : (
-          <ul className="teacher-list">
+          <ul className="teacher-grid">
             {teachers.map((teacher) => (
-              <li key={teacher.id} className="panel teacher-card">
+              <li key={teacher.id} className="teacher-card">
+                <div className="teacher-avatar" aria-hidden>
+                  {(teacher.fields.name ?? "?").slice(0, 1)}
+                </div>
                 <Link
                   href={`/docenten/${teacher.slug}`}
                   className="course-title"
@@ -30,6 +35,14 @@ export default async function DocentenPage() {
                 {teacher.fields.bio ? (
                   <p className="course-excerpt">{teacher.fields.bio}</p>
                 ) : null}
+                <div style={{ marginTop: "0.5rem" }}>
+                  <Link
+                    className="btn btn-ghost"
+                    href={`/docenten/${teacher.slug}`}
+                  >
+                    Profiel
+                  </Link>
+                </div>
               </li>
             ))}
           </ul>

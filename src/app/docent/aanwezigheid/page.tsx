@@ -11,7 +11,7 @@ export default async function AanwezigheidPage() {
 
   return (
     <main>
-      <div className="panel">
+      <div className="panel" style={{ marginTop: "0.5rem" }}>
         <AttendanceBoard />
       </div>
     </main>

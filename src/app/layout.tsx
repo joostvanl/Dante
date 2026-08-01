@@ -16,7 +16,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  title: "Dante",
+  title: "Dante — Italiaanse cursussen",
   description: "Italiaanse cursussen — aanmelden en aanwezigheid",
 };
 
@@ -31,15 +31,17 @@ export default function RootLayout({
         <div className="shell">
           <header className="site-header">
             <Link href="/" className="brand">
-              Dante
+              Dan<span>te</span>
             </Link>
-            <nav className="nav">
+            <nav className="nav" aria-label="Hoofdmenu">
               <Link href="/#cursussen">Cursussen</Link>
               <Link href="/docenten">Docenten</Link>
-              <Link href="/docent">Aanwezigheid</Link>
+              <Link href="/aanmelden">Aanmelden</Link>
+              <Link href="/docent">Docent</Link>
             </nav>
           </header>
           {children}
+          <p className="footer-note">Dante · Italiaanse taal &amp; cultuur</p>
         </div>
       </body>
     </html>

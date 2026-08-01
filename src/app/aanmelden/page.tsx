@@ -13,28 +13,32 @@ export default async function AanmeldenPage({ searchParams }: Props) {
     listCourses(),
     listEnrollees(),
   ]);
+  const visible = courses.filter((c) => c.slug !== "default");
 
   if (!courseSlug) {
     return (
       <main>
-        <section className="section" style={{ marginTop: 0 }}>
-          <h2>Aanmelden</h2>
-          <p className="sub">Kies eerst een cursus.</p>
-          {courses.length === 0 ? (
+        <section className="detail-hero anim-rise">
+          <h1>Aanmelden</h1>
+          <p className="page-sub">Kies eerst de cursus waarvoor je wilt inschrijven.</p>
+        </section>
+        <section className="section" style={{ marginTop: "1.5rem" }}>
+          {visible.length === 0 ? (
             <p className="empty">Nog geen cursussen beschikbaar.</p>
           ) : (
             <ul className="course-list">
-              {courses.map((course) => {
+              {visible.map((course) => {
                 const { open, remaining, max } = courseSpots(course, enrollees);
                 return (
                   <li key={course.id} className="course-row">
                     <div className="course-row-main">
                       <span className="course-title">{course.fields.title}</span>
-                      <div className="meta-row">
+                      <div className="meta-row" style={{ marginTop: "0.45rem" }}>
                         {course.fields.level ? (
-                          <span className="meta-chip">
-                            {course.fields.level}
-                          </span>
+                          <span className="meta-chip">{course.fields.level}</span>
+                        ) : null}
+                        {course.fields.season ? (
+                          <span className="meta-chip">{course.fields.season}</span>
                         ) : null}
                         <span
                           className={`spots${remaining === 0 ? " full" : ""}`}
@@ -81,16 +85,18 @@ export default async function AanmeldenPage({ searchParams }: Props) {
 
   return (
     <main>
-      <section className="section" style={{ marginTop: 0 }}>
+      <section className="detail-hero anim-rise">
         <p className="eyebrow">
           <Link href={`/cursus/${course.slug}`}>← {course.fields.title}</Link>
         </p>
-        <h2>Aanmelden</h2>
-        <p className="sub">
+        <h1>Aanmelden</h1>
+        <p className="page-sub">
           {open
             ? `Nog ${remaining} plek${remaining === 1 ? "" : "ken"} vrij voor ${course.fields.title}.`
             : "Er zijn geen plekken meer, of aanmelden is gesloten."}
         </p>
+      </section>
+      <section className="section" style={{ marginTop: "1.25rem" }}>
         <div className="panel">
           <EnrollForm
             courseSlug={course.slug}

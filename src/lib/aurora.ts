@@ -161,6 +161,14 @@ export function isEnrolleeForCourse(
   return enrolleeSlug.endsWith(`-for-${courseSlug}`);
 }
 
+export function courseSlugFromEnrollee(enrolleeSlug: string): string | null {
+  const marker = "-for-";
+  const i = enrolleeSlug.indexOf(marker);
+  if (i < 0) return null;
+  const courseSlug = enrolleeSlug.slice(i + marker.length);
+  return courseSlug || null;
+}
+
 export function attendanceSlug(enrolleeSlug: string, daySlug: string): string {
   return `${enrolleeSlug}-at-${daySlug}`;
 }

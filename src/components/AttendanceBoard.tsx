@@ -4,6 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { formatShortDay } from "@/lib/format";
 
+type Course = {
+  slug: string;
+  title: string;
+  level: string | null;
+  season: string | null;
+  enrolleeCount: number;
+};
+
 type Day = {
   slug: string;
   title: string;
@@ -15,9 +23,11 @@ type Person = {
   slug: string;
   name: string;
   email: string;
+  courseSlug: string | null;
 };
 
 type Roster = {
+  courses: Course[];
   days: Day[];
   enrollees: Person[];
   presentByKey: Record<string, boolean>;
@@ -30,6 +40,7 @@ function key(enrolleeSlug: string, daySlug: string) {
 export function AttendanceBoard() {
   const router = useRouter();
   const [data, setData] = useState<Roster | null>(null);
+  const [courseSlug, setCourseSlug] = useState<string>("");
   const [daySlug, setDaySlug] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<Record<string, boolean>>({});
@@ -63,12 +74,22 @@ export function AttendanceBoard() {
     void load();
   }, [load]);
 
+  const activeCourse = useMemo(
+    () => data?.courses.find((c) => c.slug === courseSlug) ?? null,
+    [data, courseSlug],
+  );
+
+  const courseEnrollees = useMemo(() => {
+    if (!data || !courseSlug) return [];
+    return data.enrollees.filter((e) => e.courseSlug === courseSlug);
+  }, [data, courseSlug]);
+
   const presentCount = useMemo(() => {
-    if (!data || !daySlug) return 0;
-    return data.enrollees.filter((e) =>
-      Boolean(data.presentByKey[key(e.slug, daySlug)]),
+    if (!daySlug) return 0;
+    return courseEnrollees.filter((e) =>
+      Boolean(data?.presentByKey[key(e.slug, daySlug)]),
     ).length;
-  }, [data, daySlug]);
+  }, [courseEnrollees, data, daySlug]);
 
   async function toggle(person: Person) {
     if (!daySlug || !data) return;
@@ -133,23 +154,94 @@ export function AttendanceBoard() {
   }
 
   if (loading) {
-    return <p className="empty">Laden…</p>;
+    return <p className="empty anim-fade">Laden…</p>;
   }
 
   if (!data) {
+    return <p className="msg msg-err">{error || "Geen gegevens."}</p>;
+  }
+
+  // Step 1: pick a course
+  if (!courseSlug || !activeCourse) {
     return (
-      <p className="msg msg-err">{error || "Geen gegevens."}</p>
+      <div className="anim-rise">
+        <div className="toolbar">
+          <div>
+            <h2 style={{ margin: 0, fontFamily: "var(--font-display)" }}>
+              Kies een cursus
+            </h2>
+            <p className="stats" style={{ margin: "0.3rem 0 0" }}>
+              Aanwezigheid registreer je per cursus en per dag.
+            </p>
+          </div>
+          <button type="button" className="btn btn-ghost" onClick={logout}>
+            Uitloggen
+          </button>
+        </div>
+
+        {error ? (
+          <p className="msg msg-err" role="alert">
+            {error}
+          </p>
+        ) : null}
+
+        {data.courses.length === 0 ? (
+          <p className="empty">Geen cursussen gevonden.</p>
+        ) : (
+          <ul className="course-picker">
+            {data.courses.map((course) => (
+              <li key={course.slug}>
+                <button
+                  type="button"
+                  className="course-pick"
+                  onClick={() => {
+                    setCourseSlug(course.slug);
+                    setError(null);
+                  }}
+                >
+                  <span>
+                    <span className="pick-title">{course.title}</span>
+                    <div className="pick-meta">
+                      {[course.level, course.season]
+                        .filter(Boolean)
+                        .join(" · ")}
+                      {course.level || course.season ? " · " : ""}
+                      {course.enrolleeCount}{" "}
+                      {course.enrolleeCount === 1 ? "inschrijver" : "inschrijvers"}
+                    </div>
+                  </span>
+                  <span className="btn btn-primary" aria-hidden>
+                    Open
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     );
   }
 
   const activeDay = data.days.find((d) => d.slug === daySlug);
 
   return (
-    <div>
+    <div className="anim-fade">
       <div className="toolbar">
         <div>
-          <h2 style={{ margin: 0, fontFamily: "var(--font-display)" }}>
-            Aanwezigheid
+          <button
+            type="button"
+            className="back-link"
+            onClick={() => setCourseSlug("")}
+          >
+            ← Andere cursus
+          </button>
+          <h2
+            style={{
+              margin: "0.45rem 0 0",
+              fontFamily: "var(--font-display)",
+            }}
+          >
+            {activeCourse.title}
           </h2>
           <p className="stats" style={{ margin: "0.25rem 0 0" }}>
             {activeDay
@@ -185,15 +277,15 @@ export function AttendanceBoard() {
 
       <div className="toolbar">
         <p className="stats">
-          {presentCount} van {data.enrollees.length} aanwezig
+          {presentCount} van {courseEnrollees.length} aanwezig
         </p>
       </div>
 
-      {data.enrollees.length === 0 ? (
-        <p className="empty">Nog geen inschrijvers.</p>
+      {courseEnrollees.length === 0 ? (
+        <p className="empty">Nog geen inschrijvers voor deze cursus.</p>
       ) : (
         <ul className="roster">
-          {data.enrollees.map((person) => {
+          {courseEnrollees.map((person) => {
             const k = key(person.slug, daySlug);
             const present = Boolean(data.presentByKey[k]);
             const busy = Boolean(pending[k]);
@@ -209,12 +301,7 @@ export function AttendanceBoard() {
                   <span>
                     <span className="name">{person.name}</span>
                     <br />
-                    <span className="email">
-                      {person.email}
-                      {person.slug.includes("-for-")
-                        ? ` · ${person.slug.split("-for-").slice(1).join("-for-")}`
-                        : ""}
-                    </span>
+                    <span className="email">{person.email}</span>
                   </span>
                   <span className="status-pill">
                     {busy ? "…" : present ? "Aanwezig" : "Afwezig"}
