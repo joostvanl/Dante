@@ -28,8 +28,8 @@ export default function RootLayout({
   return (
     <html lang="nl" className={`${dmSans.variable} ${fraunces.variable}`}>
       <body>
-        <div className="shell">
-          <header className="site-header">
+        <header className="site-header">
+          <div className="site-header-inner">
             <Link href="/" className="brand">
               Dan<span>te</span>
             </Link>
@@ -39,8 +39,10 @@ export default function RootLayout({
               <Link href="/aanmelden">Aanmelden</Link>
               <Link href="/docent">Docent</Link>
             </nav>
-          </header>
-          {children}
+          </div>
+        </header>
+        <div className="site-body">
+          <div className="shell">{children}</div>
           <p className="footer-note">Dante · Italiaanse taal &amp; cultuur</p>
         </div>
       </body>

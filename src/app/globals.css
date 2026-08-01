@@ -28,6 +28,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--header-h) + 0.75rem);
 }
 
 html,
@@ -64,25 +65,30 @@ a:hover {
   padding: 0 0 4rem;
 }
 
+.site-body {
+  padding-top: var(--header-h);
+}
+
 /* —— Header —— */
 .site-header {
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 40;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  min-height: var(--header-h);
+  background: #f7faf8;
+  border-bottom: 1px solid var(--line);
+}
+
+.site-header-inner {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+  min-height: var(--header-h);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  min-height: var(--header-h);
-  margin: 0 -0.25rem 0;
-  padding: 0.85rem 0.25rem;
-  backdrop-filter: blur(14px);
-  background: linear-gradient(
-    180deg,
-    rgba(244, 248, 246, 0.92) 0%,
-    rgba(244, 248, 246, 0.72) 70%,
-    transparent 100%
-  );
 }
 
 .brand {
@@ -170,8 +176,8 @@ a:hover {
   width: 100vw;
   margin-left: -50vw;
   margin-right: -50vw;
-  margin-top: -0.25rem;
-  min-height: min(82vh, 720px);
+  margin-top: 0;
+  min-height: min(calc(82vh - var(--header-h)), 680px);
   display: grid;
   align-content: end;
   overflow: hidden;
@@ -1089,12 +1095,16 @@ a.course-title:hover {
 }
 
 @media (max-width: 640px) {
-  .site-header {
+  :root {
+    --header-h: 5.75rem;
+  }
+
+  .site-header-inner {
     flex-direction: column;
     align-items: flex-start;
-    position: static;
-    background: none;
-    backdrop-filter: none;
+    justify-content: center;
+    padding: 0.65rem 0;
+    gap: 0.45rem;
   }
 
   .day-item {
