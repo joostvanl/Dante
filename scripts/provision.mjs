@@ -76,6 +76,46 @@ async function admin(path, init = {}) {
 const payload = {
   contentTypes: [
     {
+      apiId: "site_settings",
+      name: "Site settings",
+      description: "Globale site-instellingen (homepage hero)",
+      fields: [
+        {
+          apiId: "heroImage",
+          name: "Hero image",
+          type: "media",
+          required: false,
+          sortOrder: 0,
+        },
+        {
+          apiId: "heroTitle",
+          name: "Hero title",
+          type: "text",
+          required: false,
+          sortOrder: 1,
+        },
+        {
+          apiId: "heroLead",
+          name: "Hero lead",
+          type: "textarea",
+          required: false,
+          sortOrder: 2,
+        },
+      ],
+      entries: [
+        {
+          slug: "default",
+          status: "published",
+          fields: {
+            heroTitle: "Dante",
+            heroLead:
+              "Compacte cursussen van beginners tot gevorderd. Kies je niveau, meld je aan zolang er plek is.",
+            heroImage: "",
+          },
+        },
+      ],
+    },
+    {
       apiId: "teacher",
       name: "Teacher",
       description: "Docent Italiaanse taal voor Dante",

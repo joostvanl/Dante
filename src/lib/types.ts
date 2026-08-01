@@ -56,8 +56,16 @@ export type AttendanceFields = {
   present: boolean;
 };
 
+export type SiteSettingsFields = {
+  /** Public image URL (Aurora media field). */
+  heroImage?: string;
+  heroTitle?: string;
+  heroLead?: string;
+};
+
 export type Course = FlatEntry<CourseFields>;
 export type Teacher = FlatEntry<TeacherFields>;
 export type CourseDay = FlatEntry<CourseDayFields>;
 export type Enrollee = FlatEntry<EnrolleeFields>;
 export type Attendance = FlatEntry<AttendanceFields>;
+export type SiteSettings = FlatEntry<SiteSettingsFields>;

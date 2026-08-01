@@ -49,6 +49,7 @@ Open [http://localhost:3002](http://localhost:3002). Docent: `/docent` met `TEAC
 
 | Type | Rol |
 |------|-----|
+| `site_settings` | Globale settings — entry `default` (`heroImage`, `heroTitle`, `heroLead`) |
 | `course` | Cursussen (`title`, `description`, `maxParticipants`, `enrollmentOpen`, `teacherSlug`, `season`, `level`) |
 | `teacher` | Docenten (`name`, `specialty`, `bio`, `email`, `phone`) |
 | `course_day` | Cursusdagen (`courseSlug` koppelt aan een cursus) |

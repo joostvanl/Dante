@@ -6,6 +6,7 @@ import type {
   Enrollee,
   FlatEntry,
   Paginated,
+  SiteSettings,
   Teacher,
 } from "./types";
 
@@ -53,6 +54,16 @@ async function adminFetch<T>(path: string, init?: RequestInit): Promise<T> {
     return undefined as T;
   }
   return res.json() as Promise<T>;
+}
+
+export async function getSiteSettings(): Promise<SiteSettings | null> {
+  try {
+    return await publicFetch<SiteSettings>(
+      "/api/v1/content-types/site_settings/entries/default",
+    );
+  } catch {
+    return null;
+  }
 }
 
 export async function listCourses(): Promise<Course[]> {

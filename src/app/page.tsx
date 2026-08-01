@@ -1,34 +1,53 @@
 import Link from "next/link";
-import { listCourses, listEnrollees, listTeachers } from "@/lib/aurora";
+import {
+  getSiteSettings,
+  listCourses,
+  listEnrollees,
+  listTeachers,
+} from "@/lib/aurora";
 import { courseSpots, teacherBySlug } from "@/lib/course";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [courses, teachers, enrollees] = await Promise.all([
+  const [settings, courses, teachers, enrollees] = await Promise.all([
+    getSiteSettings(),
     listCourses(),
     listTeachers(),
     listEnrollees(),
   ]);
 
   const visible = courses.filter((c) => c.slug !== "default");
+  const heroImage = (settings?.fields.heroImage ?? "").trim();
+  const heroTitle = (settings?.fields.heroTitle ?? "").trim() || "Dante";
+  const heroLead =
+    (settings?.fields.heroLead ?? "").trim() ||
+    "Compacte cursussen van beginners tot gevorderd. Kies je niveau, meld je aan zolang er plek is.";
 
   return (
     <main>
-      <section className="hero">
-        <p className="hero-kicker anim-rise">Italiaanse taal &amp; cultuur</p>
-        <h1 className="anim-rise-2">Dante</h1>
-        <p className="lead anim-rise-3">
-          Compacte cursussen van beginners tot gevorderd. Kies je niveau, meld
-          je aan zolang er plek is.
-        </p>
-        <div className="hero-actions anim-rise-3">
-          <a className="btn btn-primary" href="#cursussen">
-            Bekijk cursussen
-          </a>
-          <Link className="btn btn-ghost" href="/docenten">
-            Ontmoet de docenten
-          </Link>
+      <section
+        className={`hero-banner${heroImage ? " has-image" : ""}`}
+        aria-label="Introductie"
+      >
+        {heroImage ? (
+          // CMS media field is a public URL string (any host Aurora returns).
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="hero-banner-media" src={heroImage} alt="" />
+        ) : null}
+        <div className="hero-banner-scrim" aria-hidden />
+        <div className="hero-banner-inner">
+          <p className="hero-kicker anim-rise">Italiaanse taal &amp; cultuur</p>
+          <h1 className="anim-rise-2">{heroTitle}</h1>
+          <p className="lead anim-rise-3">{heroLead}</p>
+          <div className="hero-actions anim-rise-3">
+            <a className="btn btn-primary" href="#cursussen">
+              Bekijk cursussen
+            </a>
+            <Link className="btn btn-on-media" href="/docenten">
+              Ontmoet de docenten
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -86,7 +105,10 @@ export default async function HomePage() {
                   </div>
                   <p className="course-excerpt">{course.fields.description}</p>
                   <div className="course-card-foot">
-                    <Link className="btn btn-ghost" href={`/cursus/${course.slug}`}>
+                    <Link
+                      className="btn btn-ghost"
+                      href={`/cursus/${course.slug}`}
+                    >
                       Details
                     </Link>
                     <Link
